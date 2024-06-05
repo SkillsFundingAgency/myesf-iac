@@ -112,4 +112,15 @@ jobs:
           clean: true
           maximumCpuCount: true
           msbuildArchitecture: x64
+  # The test job runs only if the parameter is set to true
+  # it depends on above and needs to run on the same agent as the build task
+  - job: test
+
+  # Deploy to Azure job can run alongside tests, BUT we deploy to the inactive slot
+  # and swap only if the tests pass
+  - job: deploy
+  
+  # This job is only run if the tests pass and the deploy job is successful
+  # We change slot settings and swap the slots
+  - job: makeLive
 
