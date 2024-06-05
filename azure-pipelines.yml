@@ -31,6 +31,17 @@ parameters:
     type: string
     # this isn't a secret, so we can just put it in here
     default: "345c3752-8e54-4077-90db-93ff12333be0"
+  - name: nugetFeed
+    displayName: "DevOps [NuGet feed ID, default PDS]"
+    type: string
+    default: '9fd46a3f-eada-41dc-86e9-36332aeb8ef1/ecd5af68-0566-42db-8cd7-e71176254aa2'
+
+variables:
+  # This can be inferred from the environment
+  - name: resourceGroupName
+    value: "pds-${{ parameters.environment }}-shared-rg"
+  - name: overrideParams
+    value: "-environment ${{ parameters.environment }}"
 
 jobs:
   - job: infra
@@ -55,10 +66,50 @@ jobs:
     pool:
       vmImage: "windows-latest"
     steps:
-      # 1. Checkout repository pds-skillsfundingservice
-      - task: Checkout@2
-        displayName: "Checkout repository pds-skillsfundingservice"
+      # We are submoduled, so no need to checkout the main repo. Let's just do the powershell stuff
+      # All the env vars are automatically created
+      - task: PowerShell@1
+        displayName: 'Set Version Numbers'
         inputs:
-          repository: "pds-skillsfundingservice"
+          scriptName: BuildScripts/SetVersionNumbers.ps1
+      - task: NuGetCommand@2
+        displayName: 'Set up dependencies'
+        inputs:
+          restoreSolution: ProviderDigitalServices.sln
+          vstsFeed: '${{ parameters.nugetFeed }}'
+
+      - task: VSBuild@1
+        displayName: 'Build solution ProviderDigitalServices.sln'
+        inputs:
+          solution: ProviderDigitalServices.sln
+          # VS 2022
+          vsVersion: "17.0"
+          # Same as passing /m
+          maximumCpuCount: true 
+          platform: x64
+          msbuildArchitecture: x64
+          # This reflects the environment we are building for
+          configuration: '${{ parameters.environment }}'
           clean: true
+
+      # This is from VSCode market: https://marketplace.visualstudio.com/items?itemName=qetza.replacetokens
+      - task: qetza.replacetokens.replacetokens-task.replacetokens@6
+        displayName: 'Replace tokens in **/*.config **/*.wadcfgx **/*.cscfg'
+        inputs:
+          sources: '**/*.config; **/*.wadcfgx; **/*.cscfg;'
+          tokenPattern: doubleunderscores
+          telemetryOptout: true
+      
+      # This is our actual build
+      - task: VSBuild@1
+        displayName: 'Publish: ProviderDigitalServices.Azure.Deploy'
+        inputs:
+          solution: ProviderDigitalServices.Azure.Deploy/ProviderDigitalServices.Azure.Deploy.ccproj
+          vsVersion: "17.0"
+          msbuildArgs: '/t:Publish /p:PublishDir="$(build.artifactstagingdirectory)\ProviderDigitalServices.Azure.Deploy"'
+          platform: '$(BuildPlatform)'
+          configuration: '$(BuildConfiguration)'
+          clean: true
+          maximumCpuCount: true
+          msbuildArchitecture: x64
 
