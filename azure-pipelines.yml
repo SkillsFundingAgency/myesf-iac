@@ -62,7 +62,7 @@ jobs:
           csmFile: "AppService.bicep"
           overrideParameters: "${{ variables.overrideParams }}"
           deploymentMode: "Incremental"
-  - job: buildAndTest
+  - job: build
     pool:
       vmImage: "windows-latest"
     steps:
@@ -114,13 +114,23 @@ jobs:
           msbuildArchitecture: x64
   # The test job runs only if the parameter is set to true
   # it depends on above and needs to run on the same agent as the build task
+  # NB: I *think* this will work across agents - if not I will need to create an agent pool above
   - job: test
+  # Only run if build succeeds and tests pass. This only depends on build, unlike the initial deploy
+  # which needs the bicep to be deployed first
+    dependsOn: build
+    condition: and(succeeded(), eq('${{ parameters.performTests }}', 'true'))
 
   # Deploy to Azure job can run alongside tests, BUT we deploy to the inactive slot
   # and swap only if the tests pass
   - job: deploy
+
   
   # This job is only run if the tests pass and the deploy job is successful
   # We change slot settings and swap the slots
+
+  # Make live depends on the test AND deploy jobs being successful (or skipped). If test was unsuccessful then we can
+  # still deploy if parameters.ignoreTestFailures is set to true
   - job: makeLive
+  
 
