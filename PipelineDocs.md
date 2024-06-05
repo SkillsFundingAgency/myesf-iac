@@ -16,7 +16,7 @@ These two stages will run in parallel as they are both time consuming, but argua
 1. Checkout repository pds-skillsfundingservice
 2. Powershell: run `SetVersionNumbers.ps1` which configures the version numbers of any projects in the solution. Use `-Verbose` as we want to see the output of the script.
 3. NuGET restore (**from internal feed**) - this will restore all the NuGET packages that are required for the solution. There are a number of backend dependencies that are pulled from the internal feed in the build process. If this isn't done, the build will fail.
-4. Embed all private tokens and secret keys into configuration files globally (use selector `**/*.config **/*.wadcfgx **/*.cscfg`). Auto encoding. Error out ßif a variable is missing. Doing this prevents service disruption if a secret key is missing. Token suffix is `__` and prefix is `__` (e.g. `__MySecretKey__`).
+4. Embed all private tokens and secret keys into configuration files globally (use selector `**/*.config **/*.wadcfgx **/*.cscfg`). Auto encoding. Error out if a variable is missing. Doing this prevents service disruption if a secret key is missing. Token suffix is `__` and prefix is `__` (e.g. `__MySecretKey__`).
 5. Publish the solution Using Visual Studio 2022 (or 2017 if this fails) - this will create the artifacts that will be deployed. The artifacts will be published to the `$(build.artifactstagingdirectory)\ProviderDigitalServices.Azure.Deploy`. The following parameters need to be added to MSBuild:
     * Platform: $(BuildPlatform) 
     * Configuration: $(BuildConfiguration)
