@@ -107,8 +107,9 @@ jobs:
           solution: ProviderDigitalServices.Azure.Deploy/ProviderDigitalServices.Azure.Deploy.ccproj
           vsVersion: "17.0"
           msbuildArgs: '/t:Publish /p:PublishDir="$(build.artifactstagingdirectory)\ProviderDigitalServices.Azure.Deploy"'
-          platform: '$(BuildPlatform)'
-          configuration: '$(BuildConfiguration)'
+          platform: x64
+          # This reflects the environment we are building for
+          configuration: '${{ parameters.environment }}'
           clean: true
           maximumCpuCount: true
           msbuildArchitecture: x64
@@ -132,5 +133,5 @@ jobs:
   # Make live depends on the test AND deploy jobs being successful (or skipped). If test was unsuccessful then we can
   # still deploy if parameters.ignoreTestFailures is set to true
   - job: makeLive
-  
+
 
