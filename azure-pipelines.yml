@@ -1,0 +1,64 @@
+trigger: none
+name: "SFS Environment Update"
+
+parameters:
+  - name: performTests
+    displayName: "Run tests?"
+    type: boolean
+    default: true
+  - name: Ignore test failures
+    displayName: "Ignore test failures?"
+    type: boolean
+    default: false
+    # We can override these defaults in the pipeline
+  - name: environment
+    displayName: "DevOps Output [dev, at, test, demo, oat, release]"
+    type: string
+    default: dev
+    values:
+    - dev
+    - at
+    - test
+    - demo
+    - oat
+    - release
+  - name: resourceManagerConnectionName
+    displayName: "DevOps [Azure Resource Manager service connection name, default is fine on lower environments]"
+    type: string
+    default: "PDS-DEV-RM"
+  - name: subscriptionId
+    displayName: "DevOps [Subscription Id, default is fine on lower environments]"
+    type: string
+    # this isn't a secret, so we can just put it in here
+    default: "345c3752-8e54-4077-90db-93ff12333be0"
+
+jobs:
+  - job: infra
+    displayName: "Update/Deploy Infrastructure"
+    pool:
+      # This is pretty much one of the only steps here we can run on linux
+      vmImage: "ubuntu-latest"
+    steps:
+      - task: AzureResourceManagerTemplateDeployment@3
+        inputs:
+          deploymentScope: "Resource Group"
+          azureResourceManagerConnection: "${{ parameters.resourceManagerConnectionName }}"
+          subscriptionId: "${{ parameters.subscriptionId }}"
+          action: "Create Or Update Resource Group"
+          resourceGroupName: "${{ variables.resourceGroupName }}"
+          location: "West Europe"
+          templateLocation: "Linked artifact"
+          csmFile: "AppService.bicep"
+          overrideParameters: "${{ variables.overrideParams }}"
+          deploymentMode: "Incremental"
+  - job: buildAndTest
+    pool:
+      vmImage: "windows-latest"
+    steps:
+      # 1. Checkout repository pds-skillsfundingservice
+      - task: Checkout@2
+        displayName: "Checkout repository pds-skillsfundingservice"
+        inputs:
+          repository: "pds-skillsfundingservice"
+          clean: true
+

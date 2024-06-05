@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// (c) Crown Copyright
+
 param environment string = 'dev'
 param location string = resourceGroup().location
 param appServicePlanTier string = environment == 'release' ? 'StandardS3' : 'StandardS1'
@@ -33,7 +36,7 @@ resource appService 'Microsoft.Web/sites@2022-03-01' = {
     httpsOnly: true
     siteConfig: {
       netFrameworkVersion: 'v4.8' // Specify .NET 4.8
-      // use32BitWorkerProcess: true // Enable 32-bit worker process for compatibility. Todo: check whether we are targetting x64 or not
+      // This is a 64-bit compiled ASP.NET application so other than this we don't need additional configuration
     }
   }
 }
@@ -52,7 +55,7 @@ resource stagingSlot 'Microsoft.Web/sites/slots@2022-03-01' = {
 }
 
 resource prodSlot 'Microsoft.Web/sites/slots@2022-03-01' = {
-  name: 'prod'
+  name: 'release'
   parent: appService
   location: location
   kind: kind
