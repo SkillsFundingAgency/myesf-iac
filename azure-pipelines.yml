@@ -70,7 +70,7 @@ jobs:
     pool:
       vmImage: "windows-latest"
     steps:
-      - checkout: git://ProviderDigitalServices/pds-skillsfundingservice
+      - checkout: git://Provider%20Digital%20Services/pds-skillsfundingservice
       - task: PowerShell@1
         displayName: 'Set Version Numbers'
         inputs:
@@ -78,13 +78,13 @@ jobs:
       - task: NuGetCommand@2
         displayName: 'Set up dependencies'
         inputs:
-          restoreSolution: ProviderDigitalServices.sln
+          restoreSolution: Provider%20Digital%20Services.sln
           vstsFeed: '${{ parameters.nugetFeed }}'
 
       - task: VSBuild@1
-        displayName: 'Build solution ProviderDigitalServices.sln'
+        displayName: 'Build solution Provider%20Digital%20Services.sln'
         inputs:
-          solution: ProviderDigitalServices.sln
+          solution: Provider%20Digital%20Services.sln
           # VS 2022
           vsVersion: "17.0"
           # Same as passing /m
@@ -105,11 +105,11 @@ jobs:
       
       # This is our actual build
       - task: VSBuild@1
-        displayName: 'Publish: ProviderDigitalServices.Azure.Deploy'
+        displayName: 'Publish: Provider%20Digital%20Services.Azure.Deploy'
         inputs:
-          solution: ProviderDigitalServices.Azure.Deploy/ProviderDigitalServices.Azure.Deploy.ccproj
+          solution: Provider%20Digital%20Services.Azure.Deploy/Provider%20Digital%20Services.Azure.Deploy.ccproj
           vsVersion: "17.0"
-          msbuildArgs: '/t:Publish /p:PublishDir="$(build.artifactstagingdirectory)\ProviderDigitalServices.Azure.Deploy"'
+          msbuildArgs: '/t:Publish /p:PublishDir="$(build.artifactstagingdirectory)\Provider%20Digital%20Services.Azure.Deploy"'
           platform: x64
           # This reflects the environment we are building for
           configuration: '${{ parameters.environment }}'
@@ -126,7 +126,7 @@ jobs:
     pool:
       vmImage: "windows-latest"
     steps:
-      - checkout: git://ProviderDigitalServices/pds-skillsfundingservice
+      - checkout: git://Provider%20Digital%20Services/pds-skillsfundingservice
       - task: VSTest@2
         displayName: 'Run Integration Tests'
         inputs:
@@ -150,7 +150,7 @@ jobs:
     pool:
       vmImage: "windows-latest"
     steps:
-      - checkout: git://ProviderDigitalServices/pds-skillsfundingservice
+      - checkout: git://Provider%20Digital%20Services/pds-skillsfundingservice
       - task: VSTest@2
         displayName: 'Run Smoke Tests'
         inputs:
@@ -176,7 +176,7 @@ jobs:
     pool:
       vmImage: "windows-latest"
     steps:
-    - checkout: git://ProviderDigitalServices/pds-skillsfundingservice
+    - checkout: git://Provider%20Digital%20Services/pds-skillsfundingservice
     - task: VSTest@2
       displayName: 'Run Regression Tests'
       inputs:
