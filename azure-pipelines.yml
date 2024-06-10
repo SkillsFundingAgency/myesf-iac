@@ -43,6 +43,8 @@ variables:
   - name: overrideParams
     value: "-environment ${{ parameters.environment }}"
 
+# Inital checkout
+
 jobs:
   - job: infra
     displayName: "Update/Deploy Infrastructure"
@@ -50,6 +52,8 @@ jobs:
       # This is pretty much one of the only steps here we can run on linux
       vmImage: "ubuntu-latest"
     steps:
+      # Pretty much the only component in this repo
+      - checkout: self
       - task: AzureResourceManagerTemplateDeployment@3
         inputs:
           deploymentScope: "Resource Group"
@@ -66,8 +70,7 @@ jobs:
     pool:
       vmImage: "windows-latest"
     steps:
-      # We are submoduled, so no need to checkout the main repo. Let's just do the powershell stuff
-      # All the env vars are automatically created
+      - checkout: git://ProviderDigitalServices/pds-skillsfundingservice
       - task: PowerShell@1
         displayName: 'Set Version Numbers'
         inputs:
@@ -116,11 +119,14 @@ jobs:
   # The test job runs only if the parameter is set to true
   # There are tests for integration, smoke and regression which all run in parallel
   - job: integration_test
-  # Only run if build succeeds and tests pass. This only depends on build, unlike the initial deploy
-  # which needs the bicep to be deployed first
+    # Only run if build succeeds and tests pass. This only depends on build, unlike the initial deploy
+    # which needs the bicep to be deployed first
     dependsOn: build
     condition: and(succeeded(), eq('${{ parameters.performTests }}', 'true'))
+    pool:
+      vmImage: "windows-latest"
     steps:
+      - checkout: git://ProviderDigitalServices/pds-skillsfundingservice
       - task: VSTest@2
         displayName: 'Run Integration Tests'
         inputs:
@@ -141,7 +147,10 @@ jobs:
   - job: smoke_test
     dependsOn: build
     condition: and(succeeded(), eq('${{ parameters.performTests }}', 'true'))
+    pool:
+      vmImage: "windows-latest"
     steps:
+      - checkout: git://ProviderDigitalServices/pds-skillsfundingservice
       - task: VSTest@2
         displayName: 'Run Smoke Tests'
         inputs:
@@ -164,7 +173,10 @@ jobs:
   - job: regression_test
     dependsOn: build
     condition: and(succeeded(), eq('${{ parameters.performTests }}', 'true'))
+    pool:
+      vmImage: "windows-latest"
     steps:
+    - checkout: git://ProviderDigitalServices/pds-skillsfundingservice
     - task: VSTest@2
       displayName: 'Run Regression Tests'
       inputs:
